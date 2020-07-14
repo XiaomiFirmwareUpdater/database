@@ -1,19 +1,37 @@
 """MIUI Updates Tracker Database initialization"""
 import logging
+from pathlib import Path
 
+import yaml
 from sqlalchemy import create_engine, MetaData, inspect
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import sessionmaker
+from sshtunnel import SSHTunnelForwarder
 
-from miui_updates_tracker import CONFIG
-from miui_updates_tracker.common.database.models.update import get_table as update_table
 from miui_updates_tracker.common.database.models.device import get_table as device_table
+from miui_updates_tracker.common.database.models.update import get_table as update_table
 
 logger = logging.getLogger(__name__)
-engine: Engine = create_engine(CONFIG.get('connection_string'))
+module_path = Path(__file__).parent
+tunnel = None
+# read db configuration file
+with open(module_path / 'config.yml', 'r') as f:
+    db_config = yaml.load(f, Loader=yaml.FullLoader)
+if db_config.get('local_db') is True:
+    engine: Engine = create_engine(db_config.get('local_connection_string'))
+else:
+    tunnel = SSHTunnelForwarder(
+        (db_config.get('db_server'), 22),
+        ssh_username=db_config.get('ssh_username'), ssh_pkey=db_config.get('ssh_key'),
+        remote_bind_address=('127.0.0.1', db_config.get('db_port'))
+    )
+    tunnel.start()
+    connection_string = db_config.get('db_connection_string').replace(
+        '$host', tunnel.local_bind_host).replace('$port', str(tunnel.local_bind_port))
+    engine: Engine = create_engine(connection_string)
 logger.info(f"Connected to {engine.name} database at {engine.url}")
 connection: Connection = engine.connect()
-connection.execute('SET GLOBAL connect_timeout=6000')
+# connection.execute('SET GLOBAL connect_timeout=6000')
 
 # Create a MetaData instance
 metadata: MetaData = MetaData()
