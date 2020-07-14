@@ -1,8 +1,8 @@
 """MIUI Updates Tracker Database Update model"""
+from sqlalchemy import Column, INT, VARCHAR, CHAR, BIGINT, DATE, TIMESTAMP, ForeignKeyConstraint, Table, TEXT
 from sqlalchemy.sql.functions import current_timestamp
 
-from miui_updates_tracker.common.database.models import Base
-from sqlalchemy import Column, INT, VARCHAR, CHAR, BIGINT, DATE, TIMESTAMP, ForeignKeyConstraint, Table, TEXT
+from . import Base
 
 
 class Update(Base):

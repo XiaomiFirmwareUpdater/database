@@ -1,6 +1,7 @@
 """MIUI Updates Tracker Database Device model"""
-from miui_updates_tracker.common.database.models import Base
 from sqlalchemy import Column, INT, VARCHAR, Table, TEXT, BOOLEAN
+
+from . import Base
 
 
 class Device(Base):

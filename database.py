@@ -1,14 +1,14 @@
 """
 Database related functions
 """
-from typing import Union, Tuple, List, Optional
+from typing import Union, Optional
 
 from sqlalchemy.engine import result
 from sqlalchemy.sql.functions import concat, func
 
-from miui_updates_tracker.common.database import session
-from miui_updates_tracker.common.database.models.device import Device
-from miui_updates_tracker.common.database.models.update import Update
+from . import session
+from .models.device import Device
+from .models.update import Update
 
 
 def get_mi_website_ids() -> result:
