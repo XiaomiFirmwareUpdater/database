@@ -1,0 +1,7 @@
+local_db: true
+local_connection_string: mysql+mysqldb://user:password@localhost/dbname
+db_connection_string: mysql+mysqldb://user:password@$host:$port/dbname
+db_server:
+db_port:
+ssh_username:
+ssh_key:
