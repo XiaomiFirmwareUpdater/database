@@ -3,6 +3,7 @@ Database related functions
 """
 from typing import Union, Optional
 
+from sqlalchemy import or_
 from sqlalchemy.engine import result
 from sqlalchemy.sql.functions import concat, func
 
@@ -116,6 +117,61 @@ def get_latest_updates(branch: str = "Stable") -> result:
     updates = session.query(Device.name, concat(Device.name, ' ', Device.region).label('fullname'), latest).filter(
         latest.c.codename == Device.codename).filter(Device.miui_code != "").filter(
         func.length(Device.miui_code) == 4).all()
+    return updates
+
+
+def get_device_latest(codename) -> result:
+    """
+    SELECT CONCAT(devices.name, ' ', devices.region) as name, latest.*
+    FROM devices,
+         (
+             SELECT all_latest.*
+             FROM (SELECT codename, version, android, branch, method, size, md5, link, changelog, date
+                   from updates
+                   WHERE codename like 'whyred%'
+                     AND (updates.branch = "Stable" OR updates.branch = "Weekly")
+                     AND updates.type = "Full"
+                   ORDER BY updates.date DESC
+                   LIMIT 99999) as all_latest
+             GROUP BY all_latest.codename, all_latest.method, all_latest.branch) as latest
+    WHERE devices.codename = latest.codename
+      AND LENGTH(devices.miui_code) = 4
+    """
+    all_latest = session.query(
+        Update.codename, Update.version, Update.android, Update.branch,
+        Update.method, Update.size, Update.md5, Update.link, Update.changelog, Update.date).filter(
+        Update.codename.startswith(codename)).filter(or_(Update.branch == "Stable", Update.branch == "Weekly")).filter(
+        Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
+    latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(
+        all_latest.c.method).group_by(all_latest.c.branch).subquery()
+    updates = session.query(concat(Device.name, ' ', Device.region).label('name'), latest).filter(
+        Device.codename == latest.c.codename).filter(func.length(Device.miui_code) == 4).all()
+    return updates
+
+
+def get_device_roms(codename) -> result:
+    """
+    SELECT CONCAT(devices.name, ' ', devices.region) as name, all_updates.*
+    FROM devices,
+         (
+             SELECT codename, version, android, branch, method, size, md5, link, changelog, date
+             from updates
+             WHERE codename like 'whyred%'
+               AND (updates.branch = "Stable" OR updates.branch = "Weekly")
+               AND updates.type = "Full"
+             ORDER BY updates.date DESC
+             LIMIT 99999) as all_updates
+    WHERE devices.codename = all_updates.codename
+      AND LENGTH(devices.miui_code) = 4
+    """
+    all_updates = session.query(
+        Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.size, Update.md5,
+        Update.link, Update.changelog, Update.date).filter(
+        Update.codename.startswith(codename)).filter(
+        or_(Update.branch == "Stable", Update.branch == "Weekly")).filter(
+        Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
+    updates = session.query(concat(Device.name, ' ', Device.region).label('name'), all_updates).filter(
+        Device.codename == all_updates.c.codename).filter(func.length(Device.miui_code) == 4).all()
     return updates
 
 
