@@ -73,7 +73,6 @@ def get_latest_versions(branch: str = "Stable") -> result:
          FROM (SELECT codename, version, android
                from updates
                WHERE updates.branch = "Stable"
-                 AND updates.method = "Recovery"
                  AND updates.type = "Full"
                ORDER BY updates.date DESC
                LIMIT 99999) as all_latest
@@ -84,8 +83,7 @@ def get_latest_versions(branch: str = "Stable") -> result:
     AND LENGTH(devices.miui_code) = 4
     """
     all_latest = session.query(Update.codename, Update.version, Update.android).filter(
-        Update.branch == branch).filter(Update.method == "Recovery").filter(
-        Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
+        Update.branch == branch).filter(Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     latest = session.query(all_latest).group_by(all_latest.c.codename).subquery()
     updates = session.query(latest).filter(latest.c.codename == Device.codename).filter(
         Device.eol == '0').filter(Device.miui_code != "").filter(func.length(Device.miui_code) == 4).all()
