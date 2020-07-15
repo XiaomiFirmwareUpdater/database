@@ -105,7 +105,6 @@ def get_latest_updates(branch: str = "Stable") -> result:
                LIMIT 99999) as all_latest
          GROUP BY all_latest.codename, all_latest.method) as latest
     WHERE latest.codename = devices.codename
-    AND devices.eol = 0
     AND devices.miui_code != ""
     AND LENGTH(devices.miui_code) = 4
     """
@@ -115,8 +114,8 @@ def get_latest_updates(branch: str = "Stable") -> result:
         Update.branch == branch).filter(Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(all_latest.c.method).subquery()
     updates = session.query(Device.name, concat(Device.name, ' ', Device.region).label('fullname'), latest).filter(
-        latest.c.codename == Device.codename).filter(Device.eol == '0').filter(
-        Device.miui_code != "").filter(func.length(Device.miui_code) == 4).all()
+        latest.c.codename == Device.codename).filter(Device.miui_code != "").filter(
+        func.length(Device.miui_code) == 4).all()
     return updates
 
 
