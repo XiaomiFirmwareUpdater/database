@@ -3,7 +3,7 @@ Database helper functions
 """
 from humanize import naturalsize
 
-from .database import get_latest_updates
+from .database import get_latest_updates, get_devices
 
 
 def export_latest():
@@ -24,3 +24,8 @@ def export_latest():
         "size": naturalsize(item.size),
         "version": item.version
     } for item in latest_updates]
+
+
+def export_devices():
+    devices = get_devices()
+    return {device.codename: [device.name, device.miui_name] for device in devices}

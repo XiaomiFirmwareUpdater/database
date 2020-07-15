@@ -39,6 +39,20 @@ def get_current_devices() -> result:
         func.length(Device.miui_code) == 4).all()
 
 
+def get_devices() -> result:
+    """
+    SELECT codename, CONCAT(name, ' ', region) as name, miui_name
+    from devices
+    WHERE miui_code != ""
+      AND LENGTH(miui_code) = 4
+    GROUP BY codename
+    ORDER BY codename
+    """
+    return session.query(
+        Device.codename, concat(Device.name, ' ', Device.region).label('name'), Device.miui_name
+    ).filter(Device.miui_code != "").filter(func.length(Device.miui_code) == 4).order_by(Device.codename).all()
+
+
 def get_device_latest_version(codename) -> result:
     """
     SELECT codename, version, android from updates WHERE codename = 'codename' AND updates.branch = "Stable" AND updates.type = "Full" ORDER BY date DESC LIMIT 1
