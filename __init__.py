@@ -8,10 +8,12 @@ from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import sessionmaker
 from sshtunnel import SSHTunnelForwarder
 
-from miui_updates_tracker.common.database.models.device import get_table as device_table
-from miui_updates_tracker.common.database.models.update import get_table as update_table
+from .models.device import get_table as device_table
+from .models.update import get_table as update_table
 
 logger = logging.getLogger(__name__)
+logging.getLogger('sshtunnel.SSHTunnelForwarder').setLevel(logging.ERROR)
+logging.getLogger('paramiko.transport').setLevel(logging.ERROR)
 module_path = Path(__file__).parent
 tunnel = None
 # read db configuration file
@@ -25,6 +27,7 @@ else:
         ssh_username=db_config.get('ssh_username'), ssh_pkey=db_config.get('ssh_key'),
         remote_bind_address=('127.0.0.1', db_config.get('db_port'))
     )
+    tunnel.daemon_forward_servers = True
     tunnel.start()
     connection_string = db_config.get('db_connection_string').replace(
         '$host', tunnel.local_bind_host).replace('$port', str(tunnel.local_bind_port))
@@ -50,3 +53,10 @@ if 'updates' not in ins.get_table_names():
 
 Session: sessionmaker = sessionmaker(bind=engine)
 session = Session()
+
+
+def close_db():
+    connection.close()
+    engine.dispose()
+    if tunnel:
+        tunnel.stop()
