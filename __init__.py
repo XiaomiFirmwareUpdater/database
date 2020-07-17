@@ -52,6 +52,7 @@ if 'updates' not in ins.get_table_names():
     metadata.create_all(engine)
 
 Session: sessionmaker = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = Session()
 
 
