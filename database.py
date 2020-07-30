@@ -106,6 +106,7 @@ def get_latest_updates(branch: str = "Stable") -> result:
     WHERE latest.codename = devices.codename
     AND devices.miui_code != ""
     AND LENGTH(devices.miui_code) = 4
+    ORDER BY date desc
     """
     all_latest = session.query(
         Update.codename, Update.version, Update.android, Update.branch,
@@ -114,7 +115,7 @@ def get_latest_updates(branch: str = "Stable") -> result:
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(all_latest.c.method).subquery()
     updates = session.query(Device.name, concat(Device.name, ' ', Device.region).label('fullname'), latest).filter(
         latest.c.codename == Device.codename).filter(Device.miui_code != "").filter(
-        func.length(Device.miui_code) == 4).all()
+        func.length(Device.miui_code) == 4).order_by(latest.c.date.desc()).all()
     return updates
 
 
