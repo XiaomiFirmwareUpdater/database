@@ -119,6 +119,11 @@ def get_latest_updates(branch: str = "Stable") -> result:
     return updates
 
 
+def get_all_latest_updates():
+    return get_latest_updates() + get_latest_updates(branch="Stable Beta") + get_latest_updates(
+        branch="Weekly")
+
+
 def get_device_latest(codename) -> result:
     """
     SELECT CONCAT(devices.name, ' ', devices.region) as name, latest.*
@@ -128,7 +133,7 @@ def get_device_latest(codename) -> result:
              FROM (SELECT codename, version, android, branch, method, size, md5, link, changelog, date
                    from updates
                    WHERE codename like 'whyred%'
-                     AND (updates.branch = "Stable" OR updates.branch = "Weekly")
+                     AND (updates.branch like "Stable%" OR updates.branch = "Weekly")
                      AND updates.type = "Full"
                    ORDER BY updates.date DESC
                    LIMIT 99999) as all_latest
@@ -139,7 +144,8 @@ def get_device_latest(codename) -> result:
     all_latest = session.query(
         Update.codename, Update.version, Update.android, Update.branch,
         Update.method, Update.size, Update.md5, Update.link, Update.changelog, Update.date).filter(
-        Update.codename.startswith(codename)).filter(or_(Update.branch == "Stable", Update.branch == "Weekly")).filter(
+        Update.codename.startswith(codename)).filter(
+        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(
         all_latest.c.method).group_by(all_latest.c.branch).subquery()
@@ -156,7 +162,7 @@ def get_device_roms(codename) -> result:
              SELECT codename, version, android, branch, method, size, md5, link, changelog, date
              from updates
              WHERE codename like 'whyred%'
-               AND (updates.branch = "Stable" OR updates.branch = "Weekly")
+               AND (updates.branch like "Stable%" OR updates.branch = "Weekly")
                AND updates.type = "Full"
              ORDER BY updates.date DESC
              LIMIT 99999) as all_updates
@@ -167,7 +173,7 @@ def get_device_roms(codename) -> result:
         Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.size, Update.md5,
         Update.link, Update.changelog, Update.date).filter(
         Update.codename.startswith(codename)).filter(
-        or_(Update.branch == "Stable", Update.branch == "Weekly")).filter(
+        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     updates = session.query(concat(Device.name, ' ', Device.region).label('name'), all_updates).filter(
         Device.codename == all_updates.c.codename).filter(func.length(Device.miui_code) == 4).all()
@@ -235,14 +241,15 @@ def get_update(filename) -> Update:
     return session.query(Update).filter(Update.filename == filename).first()
 
 
-def get_recovery_update(version) -> Update:
+def get_update_by_version(version, method: str = "Recovery") -> Update:
     """
-    Get an update from the database
+    Get a recovery update from the database
+    :param method: Recovery/Fastboot
     :param version: update version
     :return: update object
     """
     return session.query(Update).filter(Update.version == version).filter(
-        Update.method == "Recovery").filter(Update.type == "Full").first()
+        Update.method == method).filter(Update.type == "Full").first()
 
 
 def device_in_db(codename) -> bool:
@@ -252,3 +259,19 @@ def device_in_db(codename) -> bool:
     :return: True if the update is already in the database
     """
     return bool(session.query(Device).filter_by(codename=codename).count() >= 1)
+
+
+def update_stable_beta(recovery_update: Update):
+    """
+    recovery_update: Update object
+    """
+    if recovery_update.branch == "Stable Beta":
+        recovery_update.branch = "Stable"
+        commit_changes()
+
+
+def commit_changes():
+    """
+    commit database changes
+    """
+    session.commit()

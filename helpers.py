@@ -3,7 +3,7 @@ Database helper functions
 """
 from humanize import naturalsize
 
-from .database import get_latest_updates, get_devices
+from .database import get_devices, get_all_latest_updates
 
 
 def export_latest():
@@ -11,7 +11,7 @@ def export_latest():
     Export latest updates from the database to YAML file
     :return:
     """
-    latest_updates = get_latest_updates() + get_latest_updates(branch="Weekly")
+    latest_updates = get_all_latest_updates()
     return [{
         "android": item.android,
         "branch": item.branch,
