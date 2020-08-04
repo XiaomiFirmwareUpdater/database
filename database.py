@@ -265,9 +265,10 @@ def update_stable_beta(recovery_update: Update):
     """
     recovery_update: Update object
     """
-    if recovery_update.branch == "Stable Beta":
-        recovery_update.branch = "Stable"
-        commit_changes()
+    if recovery_update:
+        if recovery_update.branch == "Stable Beta":
+            recovery_update.branch = "Stable"
+            commit_changes()
 
 
 def commit_changes():
