@@ -120,7 +120,7 @@ def get_latest_updates(branch: str = "Stable") -> result:
 
 
 def get_all_latest_updates():
-    return get_latest_updates() + get_latest_updates(branch="Stable Beta") + get_latest_updates(
+    return get_latest_updates(branch="Stable Beta") + get_latest_updates() + get_latest_updates(
         branch="Weekly")
 
 
