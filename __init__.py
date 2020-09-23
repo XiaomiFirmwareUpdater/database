@@ -20,7 +20,7 @@ tunnel = None
 with open(module_path / 'config.yml', 'r') as f:
     db_config = yaml.load(f, Loader=yaml.FullLoader)
 if db_config.get('local_db') is True:
-    engine: Engine = create_engine(db_config.get('local_connection_string'))
+    engine: Engine = create_engine(db_config.get('local_connection_string'), pool_recycle=3600, pool_pre_ping=True)
 else:
     tunnel = SSHTunnelForwarder(
         (db_config.get('db_server'), 22),
@@ -31,7 +31,7 @@ else:
     tunnel.start()
     connection_string = db_config.get('db_connection_string').replace(
         '$host', tunnel.local_bind_host).replace('$port', str(tunnel.local_bind_port))
-    engine: Engine = create_engine(connection_string)
+    engine: Engine = create_engine(connection_string, pool_recycle=3600, pool_pre_ping=True)
 logger.info(f"Connected to {engine.name} database at {engine.url}")
 connection: Connection = engine.connect()
 # connection.execute('SET GLOBAL connect_timeout=6000')
