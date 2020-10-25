@@ -9,7 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from sshtunnel import SSHTunnelForwarder
 
 from .models.device import get_table as device_table
-from .models.update import get_table as update_table
+from .models.firmware_update import get_table as firmware_updates_table
+from .models.miui_update import get_table as miui_updates_table
 
 logger = logging.getLogger(__name__)
 logging.getLogger('sshtunnel.SSHTunnelForwarder').setLevel(logging.ERROR)
@@ -48,7 +49,11 @@ if 'devices' not in ins.get_table_names():
     metadata.create_all(engine)
 if 'updates' not in ins.get_table_names():
     logger.info("Updates table not found, creating one")
-    update_table(metadata)
+    miui_updates_table(metadata)
+    metadata.create_all(engine)
+if 'firmware' not in ins.get_table_names():
+    logger.info("Firmware table not found, creating one")
+    firmware_updates_table(metadata)
     metadata.create_all(engine)
 
 Session: sessionmaker = sessionmaker(bind=engine)

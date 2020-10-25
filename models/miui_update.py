@@ -14,7 +14,7 @@ class Update(Base):
     codename: str = Column(VARCHAR(30), nullable=False)
     version: str = Column(VARCHAR(20), nullable=False)
     android: str = Column(VARCHAR(5), nullable=False)
-    branch: str = Column(VARCHAR(6), nullable=False)
+    branch: str = Column(VARCHAR(15), nullable=False)
     type: str = Column(VARCHAR(11), nullable=False)
     method: str = Column(VARCHAR(8), nullable=False)
     size: str = Column(BIGINT(), nullable=True)
@@ -38,7 +38,7 @@ def get_table(metadata):
                  Column('codename', VARCHAR(30), nullable=False),
                  Column('version', VARCHAR(20), nullable=False),
                  Column('android', VARCHAR(5), nullable=False),
-                 Column('branch', VARCHAR(6), nullable=False),
+                 Column('branch', VARCHAR(15), nullable=False),
                  Column('type', VARCHAR(11), nullable=False),
                  Column('method', VARCHAR(8), nullable=False),
                  Column('size', BIGINT(), nullable=True),

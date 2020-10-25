@@ -9,7 +9,7 @@ from sqlalchemy.sql.functions import concat, func
 
 from . import session
 from .models.device import Device
-from .models.update import Update
+from .models.miui_update import Update
 
 
 def get_mi_website_ids() -> result:
