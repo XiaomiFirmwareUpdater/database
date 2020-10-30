@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 
 import yaml
-from sqlalchemy import create_engine, MetaData, inspect
+from sqlalchemy import create_engine, MetaData, inspect, Table
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import sessionmaker
 from sshtunnel import SSHTunnelForwarder
@@ -59,6 +59,9 @@ if 'firmware' not in ins.get_table_names():
 Session: sessionmaker = sessionmaker(bind=engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = Session()
+
+latest_updates = Table("latest_updates", metadata, autoload=True, autoload_with=engine)
+latest_firmware = Table("latest_firmware", metadata, autoload=True, autoload_with=engine)
 
 
 def close_db():

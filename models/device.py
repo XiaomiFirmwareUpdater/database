@@ -18,6 +18,7 @@ class Device(Base):
     mi_website_id: int = Column(INT())
     picture: str = Column(TEXT())
     eol: bool = Column(BOOLEAN(), default=False)
+    firmware_updater = Column(BOOLEAN(), default=True, nullable=False)
 
     def __repr__(self):
         return f"<Device(codename={self.codename}, name={self.name}, region={self.region})>"
@@ -34,4 +35,5 @@ def get_table(metadata):
                  Column('mi_website_id', INT(), nullable=True),
                  Column('picture', TEXT(), nullable=True),
                  Column('eol', BOOLEAN(), default=False, nullable=False),
+                 Column('firmware_updater', BOOLEAN(), default=True, nullable=False),
                  )

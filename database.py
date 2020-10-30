@@ -196,6 +196,10 @@ def get_device_name(codename: str) -> Optional[str]:
     return name[0] if name else None
 
 
+def get_device_info(codename: str) -> result:
+    return session.query(Device).filter(Device.codename == codename).first()
+
+
 def get_incremental(version: str) -> Update:
     """
     Get incremental update information of a version
