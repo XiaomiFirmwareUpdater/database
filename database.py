@@ -186,6 +186,11 @@ def get_codename(miui_name) -> result:
     return codename.codename if codename else None
 
 
+def get_codename_from_miui_code(miui_code) -> result:
+    codename = session.query(Device).filter(Device.miui_code == miui_code).first()
+    return codename.codename if codename else None
+
+
 def get_full_name(codename: str) -> Optional[str]:
     full_name = session.query(concat(Device.name, ' ', Device.region)).filter(Device.codename == codename).first()
     return full_name[0] if full_name else None
