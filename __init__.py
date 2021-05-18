@@ -3,14 +3,10 @@ import logging
 from pathlib import Path
 
 import yaml
-from sqlalchemy import create_engine, MetaData, inspect, Table
+from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.engine import Connection, Engine
 from sqlalchemy.orm import sessionmaker
 from sshtunnel import SSHTunnelForwarder
-
-from .models.device import get_table as device_table
-from .models.firmware_update import get_table as firmware_updates_table
-from .models.miui_update import get_table as miui_updates_table
 
 logger = logging.getLogger(__name__)
 logging.getLogger('sshtunnel.SSHTunnelForwarder').setLevel(logging.ERROR)
@@ -41,20 +37,7 @@ connection: Connection = engine.connect()
 metadata: MetaData = MetaData()
 # reflect db schema to MetaData
 metadata.reflect(bind=engine)
-# check if the table exists
-ins = inspect(engine)
-if 'devices' not in ins.get_table_names():
-    logger.info("Devices table not found, creating one")
-    device_table(metadata)
-    metadata.create_all(engine)
-if 'updates' not in ins.get_table_names():
-    logger.info("Updates table not found, creating one")
-    miui_updates_table(metadata)
-    metadata.create_all(engine)
-if 'firmware' not in ins.get_table_names():
-    logger.info("Firmware table not found, creating one")
-    firmware_updates_table(metadata)
-    metadata.create_all(engine)
+metadata.create_all(engine)
 
 Session: sessionmaker = sessionmaker(bind=engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
