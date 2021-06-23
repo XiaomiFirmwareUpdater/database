@@ -242,6 +242,15 @@ def update_in_db(filename) -> bool:
     return bool(session.query(Update).filter_by(filename=filename).count() >= 1)
 
 
+def device_in_db(codename) -> bool:
+    """
+    Check if a device is already in the database
+    :param codename: Device codename
+    :return: True if the device is already in the database
+    """
+    return bool(session.query(Device).filter_by(codename=codename).first())
+
+
 def get_update(filename) -> Update:
     """
     Get an update from the database
