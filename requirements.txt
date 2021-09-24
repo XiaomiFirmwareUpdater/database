@@ -1,4 +1,4 @@
-SQLAlchemy~=1.4.23
+SQLAlchemy~=1.4.25
 sshtunnel~=0.4.0
 PyYAML
 mysqlclient
