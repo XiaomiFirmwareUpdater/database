@@ -122,7 +122,7 @@ def get_latest_updates(branch: str = "Stable") -> result:
 
 def get_all_latest_updates():
     return get_latest_updates(branch="Stable Beta") + get_latest_updates() + get_latest_updates(
-        branch="Weekly")
+        branch="Weekly") + get_latest_updates("Public Beta")
 
 
 def get_device_latest(codename) -> result:
@@ -134,7 +134,7 @@ def get_device_latest(codename) -> result:
              FROM (SELECT codename, version, android, branch, method, size, md5, link, changelog, date
                    from updates
                    WHERE codename like 'whyred%'
-                     AND (updates.branch like "Stable%" OR updates.branch = "Weekly")
+                     AND (updates.branch like "Stable%" OR updates.branch = "Weekly" OR updates.branch = "Public Beta")
                      AND updates.type = "Full"
                    ORDER BY updates.date DESC
                    LIMIT 99999) as all_latest
@@ -146,7 +146,7 @@ def get_device_latest(codename) -> result:
         Update.codename, Update.version, Update.android, Update.branch,
         Update.method, Update.size, Update.md5, Update.link, Update.changelog, Update.date).filter(
         Update.codename.startswith(codename)).filter(
-        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly")).filter(
+        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly", Update.branch == "Public Beta")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(
         all_latest.c.method).group_by(all_latest.c.branch).subquery()
@@ -162,8 +162,8 @@ def get_device_roms(codename) -> result:
          (
              SELECT codename, version, android, branch, method, size, md5, link, changelog, date
              from updates
-             WHERE codename like 'whyred%'
-               AND (updates.branch like "Stable%" OR updates.branch = "Weekly")
+             WHERE codename like 'cmi%'
+               AND (updates.branch like "Stable%" OR updates.branch = "Weekly" OR updates.branch = "Public Beta")
                AND updates.type = "Full"
              ORDER BY updates.date DESC
              LIMIT 99999) as all_updates
@@ -174,7 +174,7 @@ def get_device_roms(codename) -> result:
         Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.size, Update.md5,
         Update.link, Update.changelog, Update.date).filter(
         Update.codename.startswith(codename)).filter(
-        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly")).filter(
+        or_(Update.branch.startswith("Stable"), Update.branch == "Weekly", Update.branch == "Public Beta")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     updates = session.query(concat(Device.name, ' ', Device.region).label('name'), all_updates).filter(
         Device.codename == all_updates.c.codename).filter(func.length(Device.miui_code) == 4).all()
