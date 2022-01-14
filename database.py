@@ -181,7 +181,9 @@ def get_device_roms(codename) -> result:
     return updates
 
 
-def get_codename(miui_name) -> result:
+def get_codename(miui_name: str) -> result:
+    if miui_name.endswith("PRE"):
+        miui_name = miui_name.replace("PRE", "")
     codename = session.query(Device).filter(Device.miui_name == miui_name).first()
     return codename.codename if codename else None
 
