@@ -32,12 +32,13 @@ def get_fastboot_codenames() -> result:
 
 def get_current_devices() -> result:
     """
-    SELECT codename from devices WHERE eol = 0 AND miui_code != "" AND LENGTH(miui_code) = 4
+    SELECT codename from devices WHERE eol = 0 AND miui_code != "" AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     :return: list of codenames
     """
     return session.query(
         Device.codename).filter(Device.eol == "0").filter(Device.miui_code != "").filter(
-        func.length(Device.miui_code) == 4).all()
+        or_(func.length(Device.miui_code) == 4,
+            Device.miui_code.endswith("RF"), Device.miui_code.endswith("FK"))).all()
 
 
 def get_devices() -> result:
@@ -51,7 +52,9 @@ def get_devices() -> result:
     """
     return session.query(
         Device.codename, concat(Device.name, ' ', Device.region).label('name'), Device.miui_name
-    ).filter(Device.miui_code != "").filter(func.length(Device.miui_code) == 4).order_by(Device.codename).all()
+    ).filter(Device.miui_code != "").filter(or_(
+        func.length(Device.miui_code) == 4, Device.miui_code.endswith("RF"),
+        Device.miui_code.endswith("FK"))).order_by(Device.codename).all()
 
 
 def get_device_latest_version(codename) -> result:
@@ -80,14 +83,15 @@ def get_latest_versions(branch: str = "Stable") -> result:
     WHERE latest.codename = devices.codename
     AND devices.eol = 0
     AND devices.miui_code != ""
-    AND LENGTH(devices.miui_code) = 4
+    AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     """
     all_latest = session.query(Update.codename, Update.version, Update.android).filter(
         Update.branch.startswith(branch)).filter(Update.type == "Full").order_by(Update.date.desc()).limit(
         99999).subquery()
     latest = session.query(all_latest).group_by(all_latest.c.codename).subquery()
     updates = session.query(latest).filter(latest.c.codename == Device.codename).filter(
-        Device.eol == '0').filter(Device.miui_code != "").filter(func.length(Device.miui_code) == 4).all()
+        Device.eol == '0').filter(Device.miui_code != "").filter(
+        or_(func.length(Device.miui_code) == 4, Device.miui_code.endswith("RF"), Device.miui_code.endswith("FK"))).all()
     return updates
 
 
@@ -106,7 +110,7 @@ def get_latest_updates(branch: str = "Stable") -> result:
          GROUP BY all_latest.codename, all_latest.method) as latest
     WHERE latest.codename = devices.codename
     AND devices.miui_code != ""
-    AND LENGTH(devices.miui_code) = 4
+    AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     ORDER BY date desc
     """
     all_latest = session.query(
@@ -116,7 +120,8 @@ def get_latest_updates(branch: str = "Stable") -> result:
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(all_latest.c.method).subquery()
     updates = session.query(Device.name, concat(Device.name, ' ', Device.region).label('fullname'), latest).filter(
         latest.c.codename == Device.codename).filter(Device.miui_code != "").filter(
-        func.length(Device.miui_code) == 4).order_by(latest.c.date.desc()).all()
+        or_(func.length(Device.miui_code) == 4, Device.miui_code.endswith("RF"),
+            Device.miui_code.endswith("FK"))).order_by(latest.c.date.desc()).all()
     return updates
 
 
@@ -140,7 +145,7 @@ def get_device_latest(codename) -> result:
                    LIMIT 99999) as all_latest
              GROUP BY all_latest.codename, all_latest.method, all_latest.branch) as latest
     WHERE devices.codename = latest.codename
-      AND LENGTH(devices.miui_code) = 4
+      AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     """
     all_latest = session.query(
         Update.codename, Update.version, Update.android, Update.branch,
@@ -151,7 +156,9 @@ def get_device_latest(codename) -> result:
     latest = session.query(all_latest).group_by(all_latest.c.codename).group_by(
         all_latest.c.method).group_by(all_latest.c.branch).subquery()
     updates = session.query(concat(Device.name, ' ', Device.region).label('name'), latest).filter(
-        Device.codename == latest.c.codename).filter(func.length(Device.miui_code) == 4).all()
+        Device.codename == latest.c.codename).filter(
+        or_(func.length(Device.miui_code) == 4, Device.miui_code.endswith("RF"),
+            Device.miui_code.endswith("FK"))).all()
     return updates
 
 
@@ -168,7 +175,7 @@ def get_device_roms(codename) -> result:
              ORDER BY updates.date DESC
              LIMIT 99999) as all_updates
     WHERE devices.codename = all_updates.codename
-      AND LENGTH(devices.miui_code) = 4
+      AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     """
     all_updates = session.query(
         Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.size, Update.md5,
@@ -177,7 +184,9 @@ def get_device_roms(codename) -> result:
         or_(Update.branch.startswith("Stable"), Update.branch == "Weekly", Update.branch == "Public Beta")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
     updates = session.query(concat(Device.name, ' ', Device.region).label('name'), all_updates).filter(
-        Device.codename == all_updates.c.codename).filter(func.length(Device.miui_code) == 4).all()
+        Device.codename == all_updates.c.codename).filter(
+        or_(func.length(Device.miui_code) == 4, Device.miui_code.endswith("RF"),
+            Device.miui_code.endswith("FK"))).all()
     return updates
 
 
