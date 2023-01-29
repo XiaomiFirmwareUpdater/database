@@ -43,8 +43,8 @@ Session: sessionmaker = sessionmaker(bind=engine)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 session = Session()
 
-latest_updates = Table("latest_updates", metadata, autoload=True, autoload_with=engine)
-latest_firmware = Table("latest_firmware", metadata, autoload=True, autoload_with=engine)
+latest_updates = Table("latest_updates", metadata, autoload_with=engine)
+latest_firmware = Table("latest_firmware", metadata, autoload_with=engine)
 
 
 def close_db():
