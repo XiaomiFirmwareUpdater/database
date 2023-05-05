@@ -59,12 +59,12 @@ def get_devices() -> result:
 
 def get_device_latest_version(codename) -> result:
     """
-    SELECT codename, version, android from updates WHERE codename = 'codename' AND updates.branch = "Stable" AND updates.type = "Full" ORDER BY date DESC LIMIT 1
+    SELECT codename, version, android from updates WHERE codename = 'codename' AND updates.branch like "Stable%" AND updates.type = "Full" ORDER BY date DESC LIMIT 1
     :param codename: device codename
     :return: codename, version, android object
     """
     return session.query(Update.codename, Update.version, Update.android).filter(Update.codename == codename).filter(
-        Update.branch == "Stable").filter(Update.type == "Full").order_by(Update.date.desc()).limit(1).first()
+        Update.branch.startswith("Stable")).filter(Update.type == "Full").order_by(Update.date.desc()).limit(1).first()
 
 
 def get_latest_versions(branch: str = "Stable") -> result:
