@@ -1,7 +1,7 @@
 """
 Database related functions
 """
-from typing import Union, Optional
+from typing import Optional, Union
 
 from sqlalchemy import or_
 from sqlalchemy.engine import result
@@ -136,7 +136,7 @@ def get_device_latest(codename) -> result:
     FROM devices,
          (
              SELECT all_latest.*
-             FROM (SELECT codename, version, android, branch, method, size, md5, link, changelog, date
+             FROM (SELECT codename, version, android, branch, method, filename, size, md5, link, changelog, date
                    from updates
                    WHERE codename like 'whyred%'
                      AND (updates.branch like "Stable%" OR updates.branch = "Weekly" OR updates.branch = "Public Beta")
@@ -149,7 +149,7 @@ def get_device_latest(codename) -> result:
     """
     all_latest = session.query(
         Update.codename, Update.version, Update.android, Update.branch,
-        Update.method, Update.size, Update.md5, Update.link, Update.changelog, Update.date).filter(
+        Update.method, Update.filename, Update.size, Update.md5, Update.link, Update.changelog, Update.date).filter(
         Update.codename.startswith(codename)).filter(
         or_(Update.branch.startswith("Stable"), Update.branch == "Weekly", Update.branch == "Public Beta")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
@@ -167,7 +167,7 @@ def get_device_roms(codename) -> result:
     SELECT CONCAT(devices.name, ' ', devices.region) as name, all_updates.*
     FROM devices,
          (
-             SELECT codename, version, android, branch, method, size, md5, link, changelog, date
+             SELECT codename, version, android, branch, method, filename, size, md5, link, changelog, date
              from updates
              WHERE codename like 'cmi%'
                AND (updates.branch like "Stable%" OR updates.branch = "Weekly" OR updates.branch = "Public Beta")
@@ -178,8 +178,8 @@ def get_device_roms(codename) -> result:
       AND (LENGTH(miui_code) = 4 or miui_code like '%RF' or miui_code like '%FK')
     """
     all_updates = session.query(
-        Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.size, Update.md5,
-        Update.link, Update.changelog, Update.date).filter(
+        Update.codename, Update.version, Update.android, Update.branch, Update.method, Update.filename, Update.size,
+        Update.md5, Update.link, Update.changelog, Update.date).filter(
         Update.codename.startswith(codename)).filter(
         or_(Update.branch.startswith("Stable"), Update.branch == "Weekly", Update.branch == "Public Beta")).filter(
         Update.type == "Full").order_by(Update.date.desc()).limit(99999).subquery()
