@@ -1,4 +1,4 @@
-"""Xiaomi Firmware Updater Database Update model"""
+"""XM Firmware Updater Database Update model"""
 from sqlalchemy import Column, INT, VARCHAR, CHAR, BIGINT, DATE, TIMESTAMP, ForeignKeyConstraint, Table, TEXT
 from sqlalchemy.sql.functions import current_timestamp
 
