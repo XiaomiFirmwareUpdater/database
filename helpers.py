@@ -6,6 +6,10 @@ from humanize import naturalsize
 from .database import get_all_latest_updates, get_devices
 
 
+def safe_naturalsize(size):
+    return naturalsize(size) if size is not None else 'Unknown'
+
+
 def export_latest():
     """
     Export latest updates from the database to YAML file
@@ -23,7 +27,7 @@ def export_latest():
                 "md5": item.md5,
                 "method": item.method,
                 "link": item.link,
-                "size": naturalsize(item.size),
+                "size": safe_naturalsize(item.size),
                 "version": item.version,
             }
             for item in latest_updates
