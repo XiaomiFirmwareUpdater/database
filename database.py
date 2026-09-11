@@ -23,11 +23,13 @@ def get_mi_website_ids() -> result:
 
 def get_fastboot_codenames() -> result:
     """
-    SELECT codename, region FROM devices WHERE mi_website_id IS NOT NULL AND eol != 1 ORDER BY codename
+    SELECT codename, region FROM devices WHERE eol != 1 AND miui_code IS NOT EMPTY ORDER BY codename
     :return: list of codenames
     """
-    return session.query(Device.codename, Device.region).filter(Device.mi_website_id != None).filter(
-        Device.eol != 1).order_by(Device.codename).all()
+    return session.query(Device.codename, Device.region).filter(Device.eol != 1).filter(
+        Device.miui_code != "").filter(or_(func.length(Device.miui_code) == 4,
+                                           Device.miui_code.endswith("RF"),
+                                           Device.miui_code.endswith("FK"))).order_by(Device.codename).all()
 
 
 def get_current_devices() -> result:
